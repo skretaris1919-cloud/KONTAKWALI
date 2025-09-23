@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Pantau Wali Santri</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f0f0f0;
+    }
+
+    .container {
+      max-width: 400px;
+      margin: 20px auto;
+      padding: 15px;
+      background-color: #e0f0ff;
+      border-radius: 10px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #004080;
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      font-size: 13px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    #noid {
+      background-color: #ffe5b4;
+    }
+
+    .btn {
+      margin-top: 15px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 10px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      font-size: 14px;
+    }
+
+    .btn:hover {
+      background-color: #218838;
+    }
+
+    .note {
+      font-size: 12px;
+      color: #ff6600;
+      margin-top: 5px;
+    }
+
+    .error {
+      color: red;
+      font-size: 13px;
+      margin-top: 5px;
+    }
+
+.form-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.form-row .form-group {
+  flex: 1 1 48%;
+}
+    @media (max-width: 480px) {
+      .container {
+        width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Kontak Wali Santri</h2>
+
+    <div class="form-group">
+      <label for="noid">No ID Santri</label>
+      <input type="text" id="noid" placeholder="Masukkan No ID" oninput="ambilDataSantri(this.value)">
+    </div>
+
+    <div class="form-group">
+      <label for="nama">Nama Santri</label>
+      <input type="text" id="nama" readonly>
+    </div>
+
+    <div class="form-group">
+      <label for="alamat">Alamat</label>
+      <input type="text" id="alamat" readonly>
+    </div>
+
+    <div class="form-row">
+  <div class="form-group">
+    <label for="kamar">Kamar</label>
+    <input type="text" id="kamar" readonly>
+  </div>
+  <div class="form-group">
+    <label for="saldo-kiriman">Saldo Kiriman</label>
+    <input type="text" id="saldo-kiriman" readonly>
+  </div>
+</div>
+
+<div class="form-row">
+  <div class="form-group">
+    <label for="saldo-tabungan">Saldo Tabungan</label>
+    <input type="text" id="saldo-tabungan" readonly>
+  </div>
+  <div class="form-group">
+    <label for="pengeluaran-hari">Pengeluaran Hari Ini</label>
+    <input type="text" id="pengeluaran-hari" readonly>
+  </div>
+</div>
+
+<div class="form-row">
+  <div class="form-group">
+    <label for="pengeluaran-pekan">Pengeluaran 1 Pekan</label>
+    <input type="text" id="pengeluaran-pekan" readonly>
+  </div>
+  <div class="form-group">
+    <label for="pengeluaran-bulan">Pengeluaran 1 Bulan</label>
+    <input type="text" id="pengeluaran-bulan" readonly>
+  </div>
+</div>
+
+    <div class="form-group">
+      <label for="nowa">No WA Wali Santri</label>
+      <input type="text" id="nowa" placeholder="Contoh: 6281234567890">
+      <div class="note">Nomor WA harus dimulai dengan <strong>628xxxx</strong></div>
+      <div id="wa-error" class="error"></div>
+    </div>
+
+    <button class="btn" onclick="validasiWA()">Simpan</button>
+  </div>
+
+  <script>
+  const supabaseHeaders = {
+    apikey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJybnFwZHZ0bmluenlxcXdobWZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1NjU3OTQsImV4cCI6MjA3MzE0MTc5NH0.6u2P5ANnDV1237hEY73M0OHRDftwc3-G0JbRx44YcZc",
+    Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJybnFwZHZ0bmluenlxcXdobWZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1NjU3OTQsImV4cCI6MjA3MzE0MTc5NH0.6u2P5ANnDV1237hEY73M0OHRDftwc3-G0JbRx44YcZc",
+    "Content-Type": "application/json"
+  };
+
+  function formatRupiah(nilai) {
+    const angka = typeof nilai === "string" ? parseFloat(nilai) : nilai;
+    return "Rp " + angka.toLocaleString("id-ID", { minimumFractionDigits: 0 });
+  }
+
+  function ambilDataSantri(noid) {
+    if (!noid || noid.length < 3) return;
+
+    const url = `https://brnqpdvtninzyqqwhmfj.supabase.co/rest/v1/tb_saldo?select=nama,alamat,nama_kamar,saldo_tabungan,jumlah_kiriman&no_id=eq.${noid}&limit=1`;
+
+    fetch(url, { headers: supabaseHeaders })
+      .then(res => {
+        if (!res.ok) throw new Error("Gagal ambil data (status " + res.status + ")");
+        return res.json();
+      })
+      .then(data => {
+if (!data || data.length === 0) {
+  document.getElementById("nama").value = "❌ Tidak ditemukan";
+  document.getElementById("alamat").value = "";
+  document.getElementById("kamar").value = "";
+  document.getElementById("saldo-kiriman").value = "";
+  document.getElementById("saldo-tabungan").value = "";
+  hapusPengeluaran(); // ← ini tambahan penting
+  return;
+}
+
+        const santri = data[0];
+        document.getElementById("nama").value = santri.nama || "";
+        document.getElementById("alamat").value = santri.alamat || "";
+        document.getElementById("kamar").value = santri.nama_kamar || "";
+        document.getElementById("saldo-kiriman").value = formatRupiah(santri.jumlah_kiriman || 0);
+        document.getElementById("saldo-tabungan").value = formatRupiah(santri.saldo_tabungan || 0);
+
+        ambilPengeluaran(noid);
+      })
+      .catch(err => {
+        console.error("❌ Gagal ambil data:", err);
+      });
+  }
+
+function hapusPengeluaran() {
+  document.getElementById("pengeluaran-hari").value = "";
+  document.getElementById("pengeluaran-pekan").value = "";
+  document.getElementById("pengeluaran-bulan").value = "";
+}
+
+  function ambilPengeluaran(noid) {
+    const now = new Date();
+    const hariIni = now.toISOString().slice(0, 10);
+    const pekanLalu = new Date(now.getTime() - 7 * 86400000).toISOString();
+    const bulanLalu = new Date(now.getTime() - 30 * 86400000).toISOString();
+
+    const baseURL = "https://brnqpdvtninzyqqwhmfj.supabase.co/rest/v1/tb_transaksi";
+
+    const queryHari = `${baseURL}?select=nominal&waktu=gte.${hariIni}&no_id=eq.${noid}`;
+    const queryPekan = `${baseURL}?select=nominal&waktu=gte.${pekanLalu}&no_id=eq.${noid}`;
+    const queryBulan = `${baseURL}?select=nominal&waktu=gte.${bulanLalu}&no_id=eq.${noid}`;
+
+    Promise.all([
+      fetch(queryHari, { headers: supabaseHeaders }).then(res => res.json()),
+      fetch(queryPekan, { headers: supabaseHeaders }).then(res => res.json()),
+      fetch(queryBulan, { headers: supabaseHeaders }).then(res => res.json())
+    ])
+    .then(([hari, pekan, bulan]) => {
+      const filterNominal = arr => arr
+        .map(t => parseInt(t.nominal || 0))
+        .filter(n => n > 0 && n < 10000000); // batas atas Rp 10 juta per transaksi
+
+      const totalHari = filterNominal(hari).reduce((sum, n) => sum + n, 0);
+      const totalPekan = filterNominal(pekan).reduce((sum, n) => sum + n, 0);
+      const totalBulan = filterNominal(bulan).reduce((sum, n) => sum + n, 0);
+
+      document.getElementById("pengeluaran-hari").value = formatRupiah(totalHari);
+      document.getElementById("pengeluaran-pekan").value = formatRupiah(totalPekan);
+      document.getElementById("pengeluaran-bulan").value = formatRupiah(totalBulan);
+    })
+    .catch(err => {
+      console.error("❌ Gagal ambil pengeluaran:", err);
+      document.getElementById("pengeluaran-hari").value = "Rp 0";
+      document.getElementById("pengeluaran-pekan").value = "Rp 0";
+      document.getElementById("pengeluaran-bulan").value = "Rp 0";
+    });
+  }
+
+  function validasiWA() {
+    const nowa = document.getElementById("nowa").value.trim();
+    const errorDiv = document.getElementById("wa-error");
+
+    if (!nowa.startsWith("628")) {
+      errorDiv.textContent = "❌ Nomor WA harus dimulai dengan 628.";
+    } else if (nowa.length < 10 || nowa.length > 15) {
+      errorDiv.textContent = "❌ Panjang nomor WA tidak valid.";
+    } else {
+      errorDiv.textContent = "";
+      alert("✅ Data berhasil disimpan (simulasi).");
+    }
+  }
+</script>
+</body>
+</html>
