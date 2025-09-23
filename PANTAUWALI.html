@@ -160,7 +160,7 @@
     <button class="btn" onclick="validasiWA()">Simpan</button>
   </div>
 
-  <script>
+<script>
   const supabaseHeaders = {
     apikey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJybnFwZHZ0bmluenlxcXdobWZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1NjU3OTQsImV4cCI6MjA3MzE0MTc5NH0.6u2P5ANnDV1237hEY73M0OHRDftwc3-G0JbRx44YcZc",
     Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJybnFwZHZ0bmluenlxcXdobWZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1NjU3OTQsImV4cCI6MjA3MzE0MTc5NH0.6u2P5ANnDV1237hEY73M0OHRDftwc3-G0JbRx44YcZc",
@@ -183,15 +183,15 @@
         return res.json();
       })
       .then(data => {
-if (!data || data.length === 0) {
-  document.getElementById("nama").value = "❌ Tidak ditemukan";
-  document.getElementById("alamat").value = "";
-  document.getElementById("kamar").value = "";
-  document.getElementById("saldo-kiriman").value = "";
-  document.getElementById("saldo-tabungan").value = "";
-  hapusPengeluaran(); // ← ini tambahan penting
-  return;
-}
+        if (!data || data.length === 0) {
+          document.getElementById("nama").value = "❌ Tidak ditemukan";
+          document.getElementById("alamat").value = "";
+          document.getElementById("kamar").value = "";
+          document.getElementById("saldo-kiriman").value = "";
+          document.getElementById("saldo-tabungan").value = "";
+          hapusPengeluaran();
+          return;
+        }
 
         const santri = data[0];
         document.getElementById("nama").value = santri.nama || "";
@@ -207,11 +207,11 @@ if (!data || data.length === 0) {
       });
   }
 
-function hapusPengeluaran() {
-  document.getElementById("pengeluaran-hari").value = "";
-  document.getElementById("pengeluaran-pekan").value = "";
-  document.getElementById("pengeluaran-bulan").value = "";
-}
+  function hapusPengeluaran() {
+    document.getElementById("pengeluaran-hari").value = "";
+    document.getElementById("pengeluaran-pekan").value = "";
+    document.getElementById("pengeluaran-bulan").value = "";
+  }
 
   function ambilPengeluaran(noid) {
     const now = new Date();
@@ -233,7 +233,7 @@ function hapusPengeluaran() {
     .then(([hari, pekan, bulan]) => {
       const filterNominal = arr => arr
         .map(t => parseInt(t.nominal || 0))
-        .filter(n => n > 0 && n < 10000000); // batas atas Rp 10 juta per transaksi
+        .filter(n => n > 0 && n < 10000000);
 
       const totalHari = filterNominal(hari).reduce((sum, n) => sum + n, 0);
       const totalPekan = filterNominal(pekan).reduce((sum, n) => sum + n, 0);
@@ -253,16 +253,55 @@ function hapusPengeluaran() {
 
   function validasiWA() {
     const nowa = document.getElementById("nowa").value.trim();
+    const noid = document.getElementById("noid").value.trim();
     const errorDiv = document.getElementById("wa-error");
 
     if (!nowa.startsWith("628")) {
       errorDiv.textContent = "❌ Nomor WA harus dimulai dengan 628.";
+      return;
     } else if (nowa.length < 10 || nowa.length > 15) {
       errorDiv.textContent = "❌ Panjang nomor WA tidak valid.";
-    } else {
-      errorDiv.textContent = "";
-      alert("✅ Data berhasil disimpan (simulasi).");
+      return;
     }
+
+    if (!noid || noid.length < 3) {
+      errorDiv.textContent = "❌ No ID Santri tidak boleh kosong.";
+      return;
+    }
+
+    errorDiv.textContent = "";
+
+    const url = `https://brnqpdvtninzyqqwhmfj.supabase.co/rest/v1/tb_saldo?no_id=eq.${noid}`;
+    const body = JSON.stringify({ wa: nowa });
+
+    fetch(url, {
+      method: "PATCH",
+      headers: supabaseHeaders,
+      body: body
+    })
+    .then(async res => {
+  if (!res.ok) throw new Error("Gagal update WA (status " + res.status + ")");
+  const text = await res.text();
+  if (!text) return {}; // respon kosong, aman
+  return JSON.parse(text);
+})
+    .then(() => {
+      alert("✅ Nomor WA berhasil disimpan.");
+      kosongkanForm();
+    })
+    .catch(err => {
+      console.error("❌ Gagal simpan WA:", err);
+      errorDiv.textContent = "❌ Gagal menyimpan ke server.";
+    });
+  }
+
+  function kosongkanForm() {
+    const ids = [
+      "noid", "nama", "alamat", "kamar", "saldo-kiriman", "saldo-tabungan",
+      "pengeluaran-hari", "pengeluaran-pekan", "pengeluaran-bulan", "nowa"
+    ];
+    ids.forEach(id => document.getElementById(id).value = "");
+    document.getElementById("wa-error").textContent = "";
   }
 </script>
 </body>
