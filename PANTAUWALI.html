@@ -100,8 +100,10 @@
 <body>
 <body style="margin:0; padding:0;">
   <div class="container">
-   <h2 style="margin-top:0;">Data Santri Idadiyah-Takhossus</h2>
-    <p style="text-align:center; font-size:12px; color:#555; margin-top:-10px; margin-bottom:15px;">
+<h2 style="margin:0; padding:0; font-size:18px; text-align:center; color:#004080;">
+  Data Santri Idadiyah-Takhossus
+</h2>
+<p style="margin:0; padding:0; font-size:12px; text-align:center; color:#555;">
   PP Al Falah As Salafi Al Kholili Kepang
 </p>
 
@@ -193,6 +195,55 @@
     <button class="btn" onclick="validasiWA()">Simpan</button>
   </div>
 
+<div id="modal-konfirmasi" style="
+  display:none;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  backdrop-filter:blur(5px);
+  background-color:rgba(0,0,0,0.3);
+  z-index:9999;
+  justify-content:center;
+  align-items:center;
+">
+<div style="
+  background-color:#fff;
+  padding:20px;
+  border-radius:10px;
+  box-shadow:0 0 10px rgba(0,0,0,0.3);
+  width:90%;
+  max-width:500px;
+  max-height:80vh;
+  overflow-y:auto;
+  font-size:14px;
+  color:#333;
+">
+    <p id="modal-info" style="margin-bottom:15px;"></p>
+    <div style="display:flex; justify-content:center; gap:10px;">
+      <button id="btn-terapkan" style="
+        background-color:#28a745;
+        color:white;
+        border:none;
+        padding:8px 12px;
+        border-radius:6px;
+        cursor:pointer;
+        font-weight:bold;
+      ">✅ Terapkan</button>
+      <button id="btn-urungkan" style="
+        background-color:#dc3545;
+        color:white;
+        border:none;
+        padding:8px 12px;
+        border-radius:6px;
+        cursor:pointer;
+        font-weight:bold;
+      ">❌ Urungkan</button>
+    </div>
+  </div>
+</div>
+
 <script>
   const supabaseHeaders = {
     apikey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJybnFwZHZ0bmluenlxcXdobWZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1NjU3OTQsImV4cCI6MjA3MzE0MTc5NH0.6u2P5ANnDV1237hEY73M0OHRDftwc3-G0JbRx44YcZc",
@@ -268,6 +319,25 @@
       });
   }
 
+// Minta izin notifikasi saat halaman dimuat
+if (Notification.permission !== "granted") {
+  Notification.requestPermission().then(permission => {
+    console.log("🔔 Izin notifikasi:", permission);
+  });
+}
+
+// Fungsi notifikasi browser asli
+function kirimNotifikasiBrowser(judul, isi) {
+  if (Notification.permission === "granted") {
+    new Notification(judul, {
+      body: isi,
+      icon: "https://brnqpdvtninzyqqwhmfj.supabase.co/storage/v1/object/public/fotoku12/tausiah.jpg"
+    });
+  } else {
+    console.warn("❌ Notifikasi ditolak atau belum diizinkan.");
+  }
+}
+
   function hapusPengeluaran() {
     document.getElementById("pengeluaran-hari").value = "";
     document.getElementById("pengeluaran-pekan").value = "";
@@ -312,49 +382,90 @@
     });
   }
 
-  function validasiWA() {
-    const nowa = document.getElementById("nowa").value.trim();
-    const noid = document.getElementById("noid").value.trim();
-    const errorDiv = document.getElementById("wa-error");
+function validasiWA() {
+  const nowa = document.getElementById("nowa").value.trim();
+  const noid = document.getElementById("noid").value.trim();
+  const nama = document.getElementById("nama").value.trim();
+  const saldo = document.getElementById("saldo-kiriman").value.trim();
+  const errorDiv = document.getElementById("wa-error");
+  const modal = document.getElementById("modal-konfirmasi");
+  const info = document.getElementById("modal-info");
 
-    if (!nowa.startsWith("628")) {
-      errorDiv.textContent = "❌ Nomor WA harus dimulai dengan 628.";
-      return;
-    } else if (nowa.length < 10 || nowa.length > 15) {
-      errorDiv.textContent = "❌ Panjang nomor WA tidak valid.";
-      return;
-    }
-
-    if (!noid || noid.length < 3) {
-      errorDiv.textContent = "❌ No ID Santri tidak boleh kosong.";
-      return;
-    }
-
-    errorDiv.textContent = "";
-
-    const url = `https://brnqpdvtninzyqqwhmfj.supabase.co/rest/v1/tb_saldo?no_id=eq.${noid}`;
-    const body = JSON.stringify({ wa: nowa });
-
-    fetch(url, {
-      method: "PATCH",
-      headers: supabaseHeaders,
-      body: body
-    })
-    .then(async res => {
-      if (!res.ok) throw new Error("Gagal update WA (status " + res.status + ")");
-      const text = await res.text();
-      if (!text) return {};
-      return JSON.parse(text);
-    })
-    .then(() => {
-      alert("✅ Nomor WA berhasil disimpan.");
-      kosongkanForm();
-    })
-    .catch(err => {
-      console.error("❌ Gagal simpan WA:", err);
-      errorDiv.textContent = "❌ Gagal menyimpan ke server.";
-    });
+  function tampilkanError(pesan) {
+    errorDiv.textContent = "❌ " + pesan;
+    kirimNotifikasiBrowser("Validasi Gagal", pesan);
   }
+
+  // Validasi nomor WA
+  if (!nowa.startsWith("628")) {
+    tampilkanError("Nomor WA harus dimulai dengan 628.");
+    modal.style.display = "none";
+    return;
+  }
+
+  if (nowa.length < 10 || nowa.length > 15) {
+    tampilkanError("Panjang nomor WA tidak valid.");
+    modal.style.display = "none";
+    return;
+  }
+
+  // Validasi No ID
+  if (!noid || noid.length < 3) {
+    tampilkanError("No ID Santri tidak boleh kosong.");
+    modal.style.display = "none";
+    return;
+  }
+
+  // Validasi Nama Santri
+  if (!nama || nama === "❌ Tidak ditemukan" || nama === "❌ Error") {
+    tampilkanError("Nama santri belum valid atau belum ditemukan.");
+    modal.style.display = "none";
+    return;
+  }
+
+  // Jika semua validasi lolos → tampilkan modal konfirmasi
+  errorDiv.textContent = "";
+
+  info.innerHTML = `
+    <h3 style="margin-top:0; margin-bottom:10px;">Ketentuan dan Biaya:</h3>
+    Program ini jika diterapkan maka akan terkonsekuensi bagi pengguna:
+    <ol style="padding-left:18px; margin-top:5px;">
+      <li>Mendapatkan informasi terkait aktivitas keuangan anaknya di pesantren.</li>
+      <li>Menerima notifikasi by WhatsApp saat anaknya melakukan transaksi.</li>
+      <li>Menerima laporan perkembangan pelajaran.</li>
+    </ol>
+
+    <p style="margin-top:10px;">
+    Ketentuan dari program ini akan dipungut biaya satu kali <strong>Rp30.000</strong> untuk penggunaan sampai santri terkait lulus atau keluar dari lembaga Idadiyah-Takhossus.
+    Biaya tersebut kami tujukan untuk administrasi yang meliputi beberapa biaya sbb.:
+    </p>
+    <ul style="padding-left:18px;">
+      <li>Tagihan bulanan server WhatsApp</li>
+      <li>Tagihan server penyimpanan dan pengamanan data</li>
+      <li>Biaya operasional lembaga Idadiyah-Takhosus</li>
+    </ul>
+
+    <p style="margin-top:10px;">
+    Biaya tersebut akan dipotong otomatis dari saldo putra Anda:
+    </p>
+    <p>
+    <strong>Nama:</strong> ${nama}<br>
+    <strong>No ID:</strong> ${noid}<br>
+    <strong>Saldo Kiriman:</strong> ${saldo}
+    </p>
+
+ <p style="margin-top:10px; margin-bottom:4px; line-height:1.4;">
+  Apakah Anda menyetujui untuk menerapkan program ini?
+</p>
+<p style="margin-top:4px; line-height:1.4;">
+  Apakah Anda ingin mengurungkan untuk menerapkan program ini karena pertimbangan saldo putra Anda tidak mencukupi?
+</p>
+  `;
+
+  modal.style.display = "flex";
+  modal.dataset.noid = noid;
+  modal.dataset.nowa = nowa;
+}
 
   function kosongkanForm() {
     const ids = [
@@ -377,6 +488,82 @@
     if (typeof nilai !== "number") nilai = parseInt(nilai) || 0;
     return "Rp " + nilai.toLocaleString("id-ID");
   }
+
+document.getElementById("btn-terapkan").addEventListener("click", () => {
+  const modal = document.getElementById("modal-konfirmasi");
+  const noid = modal.dataset.noid;
+  const nowa = modal.dataset.nowa;
+  const nama = document.getElementById("nama").value.trim();
+
+  const biayaProgram = 30000;
+  const saldoInput = document.getElementById("saldo-tabungan").value;
+  const saldoAkhirAwal = Number(saldoInput.replace(/\D/g, "")) || 0;
+
+  if (saldoAkhirAwal < biayaProgram) {
+    const pesan = `Gagal: saldo atas nama ${nama} dengan No ID ${noid} tidak mencukupi untuk biaya program.`;
+    document.getElementById("wa-error").textContent = "❌ " + pesan;
+    kirimNotifikasiBrowser("Gagal Simpan", pesan);
+    modal.style.display = "none";
+    return;
+  }
+
+  // Ambil jumlah_kiriman dan saldo_akhir dari Supabase
+  const urlGet = `https://brnqpdvtninzyqqwhmfj.supabase.co/rest/v1/tb_saldo?no_id=eq.${noid}&select=jumlah_kiriman,saldo_akhir`;
+  fetch(urlGet, { headers: supabaseHeaders })
+    .then(res => res.json())
+    .then(data => {
+      const jumlahKirimanAwal = Number(data[0]?.jumlah_kiriman || 0);
+      const saldoAkhirSebelum = Number(data[0]?.saldo_akhir || 0);
+
+      // Validasi tambahan: jumlah kiriman minimal Rp70.000
+      if (jumlahKirimanAwal < 70000) {
+        const pesan = `Gagal: jumlah kiriman atas nama ${nama} dengan No ID ${noid} kurang dari Rp70.000. Minimal kiriman harus Rp70.000 untuk melanjutkan proses.`;
+        document.getElementById("wa-error").textContent = "❌ " + pesan;
+        kirimNotifikasiBrowser("Gagal Simpan", pesan);
+        modal.style.display = "none";
+        throw new Error("Jumlah kiriman tidak mencukupi");
+      }
+
+      const jumlahKirimanBaru = jumlahKirimanAwal - biayaProgram;
+      const saldoAkhirBaru = saldoAkhirSebelum - biayaProgram;
+
+      // PATCH ke Supabase
+      const urlPatch = `https://brnqpdvtninzyqqwhmfj.supabase.co/rest/v1/tb_saldo?no_id=eq.${noid}`;
+      const body = JSON.stringify({
+        wa: nowa,
+        jumlah_kiriman: String(jumlahKirimanBaru),
+        saldo_akhir: String(saldoAkhirBaru),
+        status: "Aktif",
+        bayar_sistem: "Lunas"
+      });
+
+      return fetch(urlPatch, {
+        method: "PATCH",
+        headers: supabaseHeaders,
+        body: body
+      });
+    })
+    .then(async res => {
+      const text = await res.text();
+      console.log("📦 Respons Supabase:", text);
+      if (!res.ok) throw new Error("Gagal update (status " + res.status + ")");
+      return text ? JSON.parse(text) : {};
+    })
+    .then(() => {
+      alert("✅ WA disimpan, saldo akhir dan jumlah kiriman berhasil dikurangi. Status dan sistem pembayaran juga diperbarui.");
+      kirimNotifikasiBrowser("Berhasil Disimpan", "Data santri telah diperbarui: saldo, kiriman, status, dan sistem pembayaran.");
+      kosongkanForm();
+      modal.style.display = "none";
+    })
+    .catch(err => {
+      console.error("❌ Gagal simpan:", err);
+      if (!document.getElementById("wa-error").textContent.includes("❌")) {
+        document.getElementById("wa-error").textContent = "❌ Gagal menyimpan ke server.";
+        kirimNotifikasiBrowser("Gagal Simpan", "Terjadi kesalahan saat menyimpan ke server.");
+      }
+      modal.style.display = "none";
+    });
+});
 
 </script>
 </body>
