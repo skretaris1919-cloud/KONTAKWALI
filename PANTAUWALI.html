@@ -12,15 +12,14 @@
       background-color: #f0f0f0;
     }
 
-    .container {
-      max-width: 400px;
-      margin: 20px auto;
-      padding: 15px;
-      background-color: #e0f0ff;
-      border-radius: 10px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-    }
-
+.container {
+  max-width: 400px;
+  margin: 0 auto;         /* hilangkan margin atas */
+  padding: 0 15px 15px;   /* padding atas = 0 */
+  background-color: #e0f0ff;
+  border-radius: 10px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
     h2 {
       text-align: center;
       color: #004080;
@@ -81,15 +80,16 @@
       margin-top: 5px;
     }
 
-.form-row {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
+    .form-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
 
-.form-row .form-group {
-  flex: 1 1 48%;
-}
+    .form-row .form-group {
+      flex: 1 1 48%;
+    }
+
     @media (max-width: 480px) {
       .container {
         width: 90%;
@@ -98,14 +98,47 @@
   </style>
 </head>
 <body>
-
+<body style="margin:0; padding:0;">
   <div class="container">
-    <h2>Kontak Wali Santri</h2>
+   <h2 style="margin-top:0;">Data Santri Idadiyah-Takhossus</h2>
+    <p style="text-align:center; font-size:12px; color:#555; margin-top:-10px; margin-bottom:15px;">
+  PP Al Falah As Salafi Al Kholili Kepang
+</p>
 
-    <div class="form-group">
-      <label for="noid">No ID Santri</label>
-      <input type="text" id="noid" placeholder="Masukkan No ID" oninput="ambilDataSantri(this.value)">
+ <div class="form-group" style="text-align:center; display:flex; flex-direction:column; align-items:center;">
+  <label for="noid" style="margin-bottom:6px;">No ID Santri</label>
+  <input type="text"
+         id="noid"
+         placeholder="Masukkan No ID"
+         oninput="ambilDataSantri(this.value)"
+         style="width:220px; text-align:center; padding:6px 12px; border-radius:6px; border:1px solid #ccc;">
+</div>
+
+<div class="form-group" style="text-align:center;">
+  <label for="foto-santri">Foto Santri</label>
+
+  <!-- Kotak branding tampil sejak awal -->
+  <div id="foto-box"
+       style="display:flex; justify-content:center; align-items:center; height:130px;
+              background-image: url('https://brnqpdvtninzyqqwhmfj.supabase.co/storage/v1/object/public/fotoku12/tausiah.jpg');
+              background-size: cover;
+              background-position: center top;
+              border-radius: 8px;
+              box-shadow: 0 0 4px rgba(0,0,0,0.1);
+              position: relative;">
+    
+    <!-- Gambar santri, disembunyikan dulu -->
+    <img id="foto-santri"
+         src=""
+         alt="Foto Santri"
+         style="display:none; max-width:160px; max-height:120px; object-fit:cover; border-radius:8px; box-shadow:0 0 4px rgba(0,0,0,0.2);">
+
+    <!-- Ikon 📷 tampil sebelum gambar santri dimuat -->
+    <div id="foto-icon" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:28px; color:#aaa;">
+      📷
     </div>
+  </div>
+</div>
 
     <div class="form-group">
       <label for="nama">Nama Santri</label>
@@ -118,37 +151,37 @@
     </div>
 
     <div class="form-row">
-  <div class="form-group">
-    <label for="kamar">Kamar</label>
-    <input type="text" id="kamar" readonly>
-  </div>
-  <div class="form-group">
-    <label for="saldo-kiriman">Saldo Kiriman</label>
-    <input type="text" id="saldo-kiriman" readonly>
-  </div>
-</div>
+      <div class="form-group">
+        <label for="kamar">Kamar</label>
+        <input type="text" id="kamar" readonly>
+      </div>
+      <div class="form-group">
+        <label for="saldo-kiriman">Saldo Kiriman</label>
+        <input type="text" id="saldo-kiriman" readonly>
+      </div>
+    </div>
 
-<div class="form-row">
-  <div class="form-group">
-    <label for="saldo-tabungan">Saldo Tabungan</label>
-    <input type="text" id="saldo-tabungan" readonly>
-  </div>
-  <div class="form-group">
-    <label for="pengeluaran-hari">Pengeluaran Hari Ini</label>
-    <input type="text" id="pengeluaran-hari" readonly>
-  </div>
-</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="saldo-tabungan">Saldo Tabungan</label>
+        <input type="text" id="saldo-tabungan" readonly>
+      </div>
+      <div class="form-group">
+        <label for="pengeluaran-hari">Pengeluaran Hari Ini</label>
+        <input type="text" id="pengeluaran-hari" readonly>
+      </div>
+    </div>
 
-<div class="form-row">
-  <div class="form-group">
-    <label for="pengeluaran-pekan">Pengeluaran 1 Pekan</label>
-    <input type="text" id="pengeluaran-pekan" readonly>
-  </div>
-  <div class="form-group">
-    <label for="pengeluaran-bulan">Pengeluaran 1 Bulan</label>
-    <input type="text" id="pengeluaran-bulan" readonly>
-  </div>
-</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="pengeluaran-pekan">Pengeluaran 1 Pekan</label>
+        <input type="text" id="pengeluaran-pekan" readonly>
+      </div>
+      <div class="form-group">
+        <label for="pengeluaran-bulan">Pengeluaran 1 Bulan</label>
+        <input type="text" id="pengeluaran-bulan" readonly>
+      </div>
+    </div>
 
     <div class="form-group">
       <label for="nowa">No WA Wali Santri</label>
@@ -167,15 +200,10 @@
     "Content-Type": "application/json"
   };
 
-  function formatRupiah(nilai) {
-    const angka = typeof nilai === "string" ? parseFloat(nilai) : nilai;
-    return "Rp " + angka.toLocaleString("id-ID", { minimumFractionDigits: 0 });
-  }
-
   function ambilDataSantri(noid) {
     if (!noid || noid.length < 3) return;
 
-    const url = `https://brnqpdvtninzyqqwhmfj.supabase.co/rest/v1/tb_saldo?select=nama,alamat,nama_kamar,saldo_tabungan,jumlah_kiriman&no_id=eq.${noid}&limit=1`;
+    const url = `https://brnqpdvtninzyqqwhmfj.supabase.co/rest/v1/tb_saldo?select=nama,alamat,nama_kamar,saldo_tabungan,jumlah_kiriman,foto_url&no_id=eq.${noid}&limit=1`;
 
     fetch(url, { headers: supabaseHeaders })
       .then(res => {
@@ -183,6 +211,10 @@
         return res.json();
       })
       .then(data => {
+        const imgEl = document.getElementById("foto-santri");
+        const icon = document.getElementById("foto-icon");
+        const box = document.getElementById("foto-box");
+
         if (!data || data.length === 0) {
           document.getElementById("nama").value = "❌ Tidak ditemukan";
           document.getElementById("alamat").value = "";
@@ -190,6 +222,10 @@
           document.getElementById("saldo-kiriman").value = "";
           document.getElementById("saldo-tabungan").value = "";
           hapusPengeluaran();
+
+          if (imgEl) imgEl.style.display = "none";
+          if (icon) icon.style.display = "block";
+          if (box) box.style.backgroundImage = `url('https://brnqpdvtninzyqqwhmfj.supabase.co/storage/v1/object/public/fotoku12/tausiah.jpg')`;
           return;
         }
 
@@ -200,10 +236,35 @@
         document.getElementById("saldo-kiriman").value = formatRupiah(santri.jumlah_kiriman || 0);
         document.getElementById("saldo-tabungan").value = formatRupiah(santri.saldo_tabungan || 0);
 
+        if (santri.foto_url && imgEl && icon && box) {
+          imgEl.src = santri.foto_url;
+          imgEl.style.display = "block";
+          icon.style.display = "none";
+          box.style.backgroundImage = `url('https://brnqpdvtninzyqqwhmfj.supabase.co/storage/v1/object/public/fotoku12/tausiah.jpg')`;
+        } else {
+          imgEl.style.display = "none";
+          icon.style.display = "block";
+          box.style.backgroundImage = `url('https://brnqpdvtninzyqqwhmfj.supabase.co/storage/v1/object/public/fotoku12/tausiah.jpg')`;
+        }
+
         ambilPengeluaran(noid);
       })
       .catch(err => {
         console.error("❌ Gagal ambil data:", err);
+        document.getElementById("nama").value = "❌ Error";
+        document.getElementById("alamat").value = "";
+        document.getElementById("kamar").value = "";
+        document.getElementById("saldo-kiriman").value = "";
+        document.getElementById("saldo-tabungan").value = "";
+        hapusPengeluaran();
+
+        const imgEl = document.getElementById("foto-santri");
+        const icon = document.getElementById("foto-icon");
+        const box = document.getElementById("foto-box");
+
+        if (imgEl) imgEl.style.display = "none";
+        if (icon) icon.style.display = "block";
+        if (box) box.style.backgroundImage = `url('https://brnqpdvtninzyqqwhmfj.supabase.co/storage/v1/object/public/fotoku12/tausiah.jpg')`;
       });
   }
 
@@ -280,11 +341,11 @@
       body: body
     })
     .then(async res => {
-  if (!res.ok) throw new Error("Gagal update WA (status " + res.status + ")");
-  const text = await res.text();
-  if (!text) return {}; // respon kosong, aman
-  return JSON.parse(text);
-})
+      if (!res.ok) throw new Error("Gagal update WA (status " + res.status + ")");
+      const text = await res.text();
+      if (!text) return {};
+      return JSON.parse(text);
+    })
     .then(() => {
       alert("✅ Nomor WA berhasil disimpan.");
       kosongkanForm();
@@ -301,8 +362,23 @@
       "pengeluaran-hari", "pengeluaran-pekan", "pengeluaran-bulan", "nowa"
     ];
     ids.forEach(id => document.getElementById(id).value = "");
-    document.getElementById("wa-error").textContent = "";
+        document.getElementById("wa-error").textContent = "";
+
+    const imgEl = document.getElementById("foto-santri");
+    const icon = document.getElementById("foto-icon");
+    const box = document.getElementById("foto-box");
+
+    if (imgEl) imgEl.style.display = "none";
+    if (icon) icon.style.display = "block";
+    if (box) box.style.backgroundImage = `url('https://brnqpdvtninzyqqwhmfj.supabase.co/storage/v1/object/public/fotoku12/tausiah.jpg')`;
   }
+
+  function formatRupiah(nilai) {
+    if (typeof nilai !== "number") nilai = parseInt(nilai) || 0;
+    return "Rp " + nilai.toLocaleString("id-ID");
+  }
+
 </script>
 </body>
 </html>
+   
