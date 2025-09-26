@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Daftar Santri Idadiyah Takhossusiyah</title>
+  <link rel="icon" href="https://brnqpdvtninzyqqwhmfj.supabase.co/storage/v1/object/public/fotoku12/favicon.ico" type="image/x-icon">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
   <style>
@@ -23,34 +24,29 @@
       min-height: 100vh;
     }
     .header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border-bottom: 2px solid #ccc;
-  padding-bottom: 10px;
-}
-
-.logo {
-  width: 60px;
-  height: 60px;
-  object-fit: contain;
-}
-
-.judul-box {
-  flex: 1;
-}
-
-.title {
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 4px;
-}
-
-.subtitle {
-  font-size: 12px;
-  color: #555;
-}
-   
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 2px solid #ccc;
+      padding-bottom: 10px;
+    }
+    .logo {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+    }
+    .judul-box {
+      flex: 1;
+    }
+    .title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    .subtitle {
+      font-size: 12px;
+      color: #555;
+    }
     .search-bar {
       margin: 20px 0;
       display: flex;
@@ -99,14 +95,38 @@
     tr:nth-child(odd) {
       background-color: #fff;
     }
-thead th {
-  background-color: #0077cc; /* warna latar belakang */
-  color: white;              /* warna teks */
-  position: sticky;
-  top: 0;
-  z-index: 1;
-}
-
+    thead th {
+      background-color: #0077cc;
+      color: white;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    .daftar-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    .arrow {
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+    .text {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .link {
+      display: inline-block;
+      padding: 6px 12px;
+      background-color: #0077cc;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+    .link:hover {
+      background-color: #005fa3;
+    }
     @media (max-width: 480px) {
       .title {
         font-size: 18px;
@@ -123,13 +143,13 @@ thead th {
 </head>
 <body>
   <div class="container">
-<div class="header">
-  <img src="https://brnqpdvtninzyqqwhmfj.supabase.co/storage/v1/object/public/fotoku12/LAMBANG%20KEPANG%20PNG.png" class="logo" alt="Logo">
-  <div class="judul-box">
-    <div class="title">Daftar Santri Idadiyah Takhossusiyah</div>
-    <div class="subtitle">PP Al Falah As Salafi Al Kholili Kepang Bangkalan</div>
-  </div>
-</div>
+    <div class="header">
+      <img src="https://brnqpdvtninzyqqwhmfj.supabase.co/storage/v1/object/public/fotoku12/LAMBANG%20KEPANG%20PNG.png" class="logo" alt="Logo">
+      <div class="judul-box">
+        <div class="title">Daftar Santri Idadiyah Takhossusiyah</div>
+        <div class="subtitle">PP Al Falah As Salafi Al Kholili Kepang Bangkalan</div>
+      </div>
+    </div>
 
     <div class="search-bar">
       <label for="search">Cari Nama:</label>
@@ -151,13 +171,13 @@ thead th {
         <tbody></tbody>
       </table>
     </div>
-  </div>
 
-  <div class="daftar-link">
-  <div class="arrow">⬇️</div>
-  <div class="text">Kunjungi situs pendaftaran:</div>
-  <a href="https://skretaris1919-cloud.github.io/KONTAKWALI/PANTAUWALI.html" target="_blank" class="link">👉 Klik di sini</a>
-</div>
+    <div class="daftar-link">
+      <div class="arrow">⬇️</div>
+      <div class="text">Kunjungi situs pendaftaran:</div>
+      <a href="https://skretaris1919-cloud.github.io/KONTAKWALI/PANTAUWALI.html" target="_blank" class="link">👉 Klik di sini</a>
+    </div>
+  </div>
 
   <script>
     const API_URL = "https://brnqpdvtninzyqqwhmfj.supabase.co/rest/v1/tb_saldo";
@@ -215,6 +235,4 @@ thead th {
     fetchData();
   </script>
 </body>
-
 </html>
-
