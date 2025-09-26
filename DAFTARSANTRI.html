@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Daftar Santri Idadiyah Takhossusiyah</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+    .container {
+      max-width: 480px;
+      margin: auto;
+      padding: 20px;
+      background-color: #fff;
+      min-height: 100vh;
+    }
+    .header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 2px solid #ccc;
+  padding-bottom: 10px;
+}
+
+.logo {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
+.judul-box {
+  flex: 1;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: #555;
+}
+   
+    .search-bar {
+      margin: 20px 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    label {
+      font-weight: bold;
+      font-size: 14px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 6px;
+      font-size: 14px;
+    }
+    button {
+      padding: 6px 12px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .table-wrapper {
+      max-height: 700px;
+      overflow-y: auto;
+      overflow-x: auto;
+      border: 1px solid #ccc;
+      margin-top: 10px;
+      background-color: #fff;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      table-layout: fixed;
+    }
+    th, td {
+      padding: 8px;
+      border: 1px solid #ccc;
+      text-align: left;
+      word-wrap: break-word;
+      white-space: normal;
+    }
+    tr:nth-child(even) {
+      background-color: #eef;
+    }
+    tr:nth-child(odd) {
+      background-color: #fff;
+    }
+thead th {
+  background-color: #0077cc; /* warna latar belakang */
+  color: white;              /* warna teks */
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+    @media (max-width: 480px) {
+      .title {
+        font-size: 18px;
+      }
+      .logo {
+        width: 50px;
+        height: 50px;
+      }
+      table {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+<div class="header">
+  <img src="https://brnqpdvtninzyqqwhmfj.supabase.co/storage/v1/object/public/fotoku12/LAMBANG%20KEPANG%20PNG.png" class="logo" alt="Logo">
+  <div class="judul-box">
+    <div class="title">Daftar Santri Idadiyah Takhossusiyah</div>
+    <div class="subtitle">PP Al Falah As Salafi Al Kholili Kepang Bangkalan</div>
+  </div>
+</div>
+
+    <div class="search-bar">
+      <label for="search">Cari Nama:</label>
+      <input type="text" id="search" placeholder="Masukkan nama santri">
+      <button onclick="filterData()">Cari</button>
+      <button onclick="resetFilter()">Unfilter</button>
+    </div>
+
+    <div class="table-wrapper">
+      <table id="data-table">
+        <thead>
+          <tr>
+            <th>No ID</th>
+            <th>Nama</th>
+            <th>Alamat</th>
+            <th>Kamar</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://brnqpdvtninzyqqwhmfj.supabase.co/rest/v1/tb_saldo";
+    const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJybnFwZHZ0bmluenlxcXdobWZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1NjU3OTQsImV4cCI6MjA3MzE0MTc5NH0.6u2P5ANnDV1237hEY73M0OHRDftwc3-G0JbRx44YcZc";
+
+    let originalData = [];
+
+    async function fetchData() {
+      const res = await fetch(API_URL, {
+        headers: {
+          apikey: API_KEY,
+          Authorization: "Bearer " + API_KEY,
+          "Content-Type": "application/json"
+        }
+      });
+      const data = await res.json();
+      originalData = data;
+      renderTable(data);
+    }
+
+    function renderTable(data) {
+      const tbody = document.querySelector("#data-table tbody");
+      tbody.innerHTML = "";
+      data.forEach(row => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row.no_id}</td>
+          <td>${row.nama}</td>
+          <td>${row.alamat}</td>
+          <td>${row.nama_kamar}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterData() {
+      const keyword = document.getElementById("search").value.trim();
+      if (!keyword) return;
+
+      const fuse = new Fuse(originalData, {
+        keys: ["nama"],
+        threshold: 0.4,
+        ignoreLocation: true
+      });
+
+      const result = fuse.search(keyword).map(r => r.item);
+      renderTable(result);
+    }
+
+    function resetFilter() {
+      document.getElementById("search").value = "";
+      renderTable(originalData);
+    }
+
+    fetchData();
+  </script>
+</body>
+</html>
