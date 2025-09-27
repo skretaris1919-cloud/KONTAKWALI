@@ -496,16 +496,6 @@ document.getElementById("btn-terapkan").addEventListener("click", () => {
   const nama = document.getElementById("nama").value.trim();
 
   const biayaProgram = 30000;
-  const saldoInput = document.getElementById("saldo-tabungan").value;
-  const saldoAkhirAwal = Number(saldoInput.replace(/\D/g, "")) || 0;
-
-  if (saldoAkhirAwal < biayaProgram) {
-    const pesan = `Gagal: saldo atas nama ${nama} dengan No ID ${noid} tidak mencukupi untuk biaya program.`;
-    document.getElementById("wa-error").textContent = "❌ " + pesan;
-    kirimNotifikasiBrowser("Gagal Simpan", pesan);
-    modal.style.display = "none";
-    return;
-  }
 
   // Ambil jumlah_kiriman dan saldo_akhir dari Supabase
   const urlGet = `https://brnqpdvtninzyqqwhmfj.supabase.co/rest/v1/tb_saldo?no_id=eq.${noid}&select=jumlah_kiriman,saldo_akhir`;
@@ -515,7 +505,7 @@ document.getElementById("btn-terapkan").addEventListener("click", () => {
       const jumlahKirimanAwal = Number(data[0]?.jumlah_kiriman || 0);
       const saldoAkhirSebelum = Number(data[0]?.saldo_akhir || 0);
 
-      // Validasi tambahan: jumlah kiriman minimal Rp70.000
+      // Validasi: jumlah kiriman minimal Rp70.000
       if (jumlahKirimanAwal < 70000) {
         const pesan = `Gagal: jumlah kiriman atas nama ${nama} dengan No ID ${noid} kurang dari Rp70.000. Minimal kiriman harus Rp70.000 untuk melanjutkan proses.`;
         document.getElementById("wa-error").textContent = "❌ " + pesan;
@@ -550,8 +540,8 @@ document.getElementById("btn-terapkan").addEventListener("click", () => {
       return text ? JSON.parse(text) : {};
     })
     .then(() => {
-      alert("✅ WA disimpan, saldo akhir dan jumlah kiriman berhasil dikurangi. Status dan sistem pembayaran juga diperbarui.");
-      kirimNotifikasiBrowser("Berhasil Disimpan", "Data santri telah diperbarui: saldo, kiriman, status, dan sistem pembayaran.");
+      alert("✅ WA disimpan, jumlah kiriman dan saldo akhir berhasil dikurangi. Status dan sistem pembayaran juga diperbarui.");
+      kirimNotifikasiBrowser("Berhasil Disimpan", "Data santri telah diperbarui: jumlah kiriman, saldo akhir, status, dan sistem pembayaran.");
       kosongkanForm();
       modal.style.display = "none";
     })
@@ -569,6 +559,7 @@ document.getElementById("btn-terapkan").addEventListener("click", () => {
 </body>
 </html>
    
+
 
 
 
