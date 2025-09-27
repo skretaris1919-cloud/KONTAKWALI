@@ -498,14 +498,55 @@ document.getElementById("btn-terapkan").addEventListener("click", () => {
   const biayaProgram = 30000;
 
   // Ambil jumlah_kiriman dan saldo_akhir dari Supabase
-  const urlGet = `https://brnqpdvtninzyqqwhmfj.supabase.co/rest/v1/tb_saldo?no_id=eq.${noid}&select=jumlah_kiriman,saldo_akhir`;
+  const urlGet = `https://brnqpdvtninzyqqwhmfj.supabase.co/rest/v1/tb_saldo?no_id=eq.${noid}&select=jumlah_kiriman,saldo_akhir,wa`;
   fetch(urlGet, { headers: supabaseHeaders })
     .then(res => res.json())
     .then(data => {
       const jumlahKirimanAwal = Number(data[0]?.jumlah_kiriman || 0);
       const saldoAkhirSebelum = Number(data[0]?.saldo_akhir || 0);
+      const waSebelumnya = data[0]?.wa?.trim() || "";
 
-      // Validasi: jumlah kiriman minimal Rp70.000
+      // 🔍 Cek apakah WA sudah terisi
+      if (waSebelumnya !== "") {
+        const lanjutkan = confirm(`⚠️ Santri atas nama ${nama} dengan No ID ${noid} sudah mendaftar.\nLanjutkan update WA saja tanpa mengubah saldo atau status?`);
+        if (!lanjutkan) {
+          kirimNotifikasiBrowser("Dibatalkan", "Proses dibatalkan karena santri sudah mendaftar.");
+          modal.style.display = "none";
+          return;
+        }
+
+        // PATCH hanya kolom WA
+        const urlPatchWA = `https://brnqpdvtninzyqqwhmfj.supabase.co/rest/v1/tb_saldo?no_id=eq.${noid}`;
+        const bodyWA = JSON.stringify({ wa: nowa });
+
+        return fetch(urlPatchWA, {
+          method: "PATCH",
+          headers: supabaseHeaders,
+          body: bodyWA
+        })
+        .then(async res => {
+          const text = await res.text();
+          console.log("📦 Respons WA-only:", text);
+          if (!res.ok) throw new Error("Gagal update WA (status " + res.status + ")");
+          return text ? JSON.parse(text) : {};
+        })
+        .then(() => {
+          alert("✅ WA berhasil diperbarui tanpa mengubah saldo atau status.");
+          kirimNotifikasiBrowser("WA Diperbarui", "Kolom WA berhasil diperbarui.");
+          kosongkanForm();
+          modal.style.display = "none";
+        })
+        .catch(err => {
+          console.error("❌ Gagal update WA:", err);
+          document.getElementById("wa-error").textContent = "❌ Gagal update WA ke server.";
+          kirimNotifikasiBrowser("Gagal Update WA", "Terjadi kesalahan saat update WA.");
+          modal.style.display = "none";
+        });
+
+        return; // ⛔ Stop proses utama
+      }
+
+      // ✅ Validasi: jumlah kiriman minimal Rp70.000
       if (jumlahKirimanAwal < 70000) {
         const pesan = `Gagal: jumlah kiriman atas nama ${nama} dengan No ID ${noid} kurang dari Rp70.000. Minimal kiriman harus Rp70.000 untuk melanjutkan proses.`;
         document.getElementById("wa-error").textContent = "❌ " + pesan;
@@ -554,11 +595,11 @@ document.getElementById("btn-terapkan").addEventListener("click", () => {
       modal.style.display = "none";
     });
 });
-
 </script>
 </body>
 </html>
    
+
 
 
 
