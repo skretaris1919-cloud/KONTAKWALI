@@ -254,7 +254,7 @@
   function ambilDataSantri(noid) {
     if (!noid || noid.length < 3) return;
 
-    const url = `https://brnqpdvtninzyqqwhmfj.supabase.co/rest/v1/tb_saldo?select=nama,alamat,nama_kamar,saldo_tabungan,jumlah_kiriman,foto_url&no_id=eq.${noid}&limit=1`;
+    const url = `https://brnqpdvtninzyqqwhmfj.supabase.co/rest/v1/tb_saldo?select=nama,alamat,nama_kamar,saldo_tabungan,jumlah_kiriman,foto_url,wa&no_id=eq.${noid}&limit=1`;
 
     fetch(url, { headers: supabaseHeaders })
       .then(res => {
@@ -286,6 +286,7 @@
         document.getElementById("kamar").value = santri.nama_kamar || "";
         document.getElementById("saldo-kiriman").value = formatRupiah(santri.jumlah_kiriman || 0);
         document.getElementById("saldo-tabungan").value = formatRupiah(santri.saldo_tabungan || 0);
+        document.getElementById("nowa").value = santri.wa || "";
 
         if (santri.foto_url && imgEl && icon && box) {
           imgEl.src = santri.foto_url;
@@ -599,9 +600,3 @@ document.getElementById("btn-terapkan").addEventListener("click", () => {
 </body>
 </html>
    
-
-
-
-
-
-
