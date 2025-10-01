@@ -251,6 +251,19 @@
     "Content-Type": "application/json"
   };
 
+window.addEventListener("DOMContentLoaded", () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const noidParam = urlParams.get("no_id");
+
+  if (noidParam && noidParam.length >= 3) {
+    const inputNoid = document.getElementById("noid");
+    if (inputNoid) {
+      inputNoid.value = noidParam;
+      ambilDataSantri(noidParam); // ⏱️ langsung ambil data jika cocok
+    }
+  }
+});
+
   function ambilDataSantri(noid) {
     if (!noid || noid.length < 3) return;
 
@@ -600,3 +613,4 @@ document.getElementById("btn-terapkan").addEventListener("click", () => {
 </body>
 </html>
    
+
