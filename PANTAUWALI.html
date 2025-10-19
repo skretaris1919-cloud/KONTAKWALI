@@ -264,80 +264,59 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-  function ambilDataSantri(noid) {
-    if (!noid || noid.length < 3) return;
+function ambilDataSantri(noid) {
+  if (!noid || noid.length < 3) return;
 
-    const url = `https://brnqpdvtninzyqqwhmfj.supabase.co/rest/v1/tb_saldo?select=nama,alamat,nama_kamar,saldo_tabungan,jumlah_kiriman,foto_url,wa&no_id=eq.${noid}&limit=1`;
+  fetch("https://www.alfalah1919.com/KAUNTRI/DAFTAR/get_santri_dan_pengeluaran.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: `no_id=${encodeURIComponent(noid)}`
+  })
+  .then(res => res.json())
+  .then(data => {
+    const santri = data.santri || {};
+    const pengeluaran = data.pengeluaran || {};
 
-    fetch(url, { headers: supabaseHeaders })
-      .then(res => {
-        if (!res.ok) throw new Error("Gagal ambil data (status " + res.status + ")");
-        return res.json();
-      })
-      .then(data => {
-        const imgEl = document.getElementById("foto-santri");
-        const icon = document.getElementById("foto-icon");
-        const box = document.getElementById("foto-box");
+    document.getElementById("nama").value = santri.nama || "❌ Tidak ditemukan";
+    document.getElementById("alamat").value = santri.alamat || "";
+    document.getElementById("kamar").value = santri.nama_kamar || "";
+    document.getElementById("saldo-kiriman").value = formatRupiah(santri.jumlah_kiriman || 0);
+    document.getElementById("saldo-tabungan").value = formatRupiah(santri.saldo_tabungan || 0);
+    document.getElementById("nowa").value = santri.wa || "";
 
-        if (!data || data.length === 0) {
-          document.getElementById("nama").value = "❌ Tidak ditemukan";
-          document.getElementById("alamat").value = "";
-          document.getElementById("kamar").value = "";
-          document.getElementById("saldo-kiriman").value = "";
-          document.getElementById("saldo-tabungan").value = "";
-          hapusPengeluaran();
+    const imgEl = document.getElementById("foto-santri");
+    const icon = document.getElementById("foto-icon");
+    const box = document.getElementById("foto-box");
 
-          if (imgEl) imgEl.style.display = "none";
-          if (icon) icon.style.display = "block";
-          if (box) box.style.backgroundImage = `url('https://brnqpdvtninzyqqwhmfj.supabase.co/storage/v1/object/public/fotoku12/tausiah.jpg')`;
-          return;
-        }
+    if (santri.foto_url && imgEl && icon && box) {
+      imgEl.src = santri.foto_url;
+      imgEl.style.display = "block";
+      icon.style.display = "none";
+      box.style.backgroundImage = `url('fallback.jpg')`;
+    } else {
+      imgEl.style.display = "none";
+      icon.style.display = "block";
+      box.style.backgroundImage = `url('fallback.jpg')`;
+    }
 
-        const santri = data[0];
-        document.getElementById("nama").value = santri.nama || "";
-        document.getElementById("alamat").value = santri.alamat || "";
-        document.getElementById("kamar").value = santri.nama_kamar || "";
-        document.getElementById("saldo-kiriman").value = formatRupiah(santri.jumlah_kiriman || 0);
-        document.getElementById("saldo-tabungan").value = formatRupiah(santri.saldo_tabungan || 0);
-        document.getElementById("nowa").value = santri.wa || "";
-
-        if (santri.foto_url && imgEl && icon && box) {
-          imgEl.src = santri.foto_url;
-          imgEl.style.display = "block";
-          icon.style.display = "none";
-          box.style.backgroundImage = `url('https://brnqpdvtninzyqqwhmfj.supabase.co/storage/v1/object/public/fotoku12/tausiah.jpg')`;
-        } else {
-          imgEl.style.display = "none";
-          icon.style.display = "block";
-          box.style.backgroundImage = `url('https://brnqpdvtninzyqqwhmfj.supabase.co/storage/v1/object/public/fotoku12/tausiah.jpg')`;
-        }
-
-        ambilPengeluaran(noid);
-      })
-      .catch(err => {
-        console.error("❌ Gagal ambil data:", err);
-        document.getElementById("nama").value = "❌ Error";
-        document.getElementById("alamat").value = "";
-        document.getElementById("kamar").value = "";
-        document.getElementById("saldo-kiriman").value = "";
-        document.getElementById("saldo-tabungan").value = "";
-        hapusPengeluaran();
-
-        const imgEl = document.getElementById("foto-santri");
-        const icon = document.getElementById("foto-icon");
-        const box = document.getElementById("foto-box");
-
-        if (imgEl) imgEl.style.display = "none";
-        if (icon) icon.style.display = "block";
-        if (box) box.style.backgroundImage = `url('https://brnqpdvtninzyqqwhmfj.supabase.co/storage/v1/object/public/fotoku12/tausiah.jpg')`;
-      });
-  }
-
-// Minta izin notifikasi saat halaman dimuat
-if (Notification.permission !== "granted") {
-  Notification.requestPermission().then(permission => {
-    console.log("🔔 Izin notifikasi:", permission);
+    document.getElementById("pengeluaran-hari").value = formatRupiah(pengeluaran.hari || 0);
+    document.getElementById("pengeluaran-pekan").value = formatRupiah(pengeluaran.pekan || 0);
+    document.getElementById("pengeluaran-bulan").value = formatRupiah(pengeluaran.bulan || 0);
+  })
+  .catch(err => {
+    console.error("❌ Gagal ambil data:", err);
+    document.getElementById("nama").value = "❌ Error";
+    document.getElementById("alamat").value = "";
+    document.getElementById("kamar").value = "";
+    document.getElementById("saldo-kiriman").value = "";
+    document.getElementById("saldo-tabungan").value = "";
+    document.getElementById("pengeluaran-hari").value = "Rp 0";
+    document.getElementById("pengeluaran-pekan").value = "Rp 0";
+    document.getElementById("pengeluaran-bulan").value = "Rp 0";
   });
+}
+    function formatRupiah(angka) {
+  return "Rp " + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 
 // Fungsi notifikasi browser asli
@@ -511,7 +490,7 @@ function validasiWA() {
       const biayaProgram = 30000;
 
       // Ambil data awal dari server Hostinger
-      fetch("https://namadomainmu.com/get_saldo.php", {
+      fetch("https://www.alfalah1919.com/KAUNTRI/DAFTAR/get_saldo.php", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: `no_id=${encodeURIComponent(noid)}`
@@ -583,5 +562,6 @@ function validasiWA() {
 </body>
 </html>
    
+
 
 
