@@ -503,114 +503,85 @@ function validasiWA() {
     return "Rp " + nilai.toLocaleString("id-ID");
   }
 
-document.getElementById("btn-terapkan").addEventListener("click", () => {
-  const modal = document.getElementById("modal-konfirmasi");
-  const noid = modal.dataset.noid;
-  const nowa = modal.dataset.nowa;
-  const nama = document.getElementById("nama").value.trim();
+    document.getElementById("btn-terapkan").addEventListener("click", () => {
+      const modal = document.getElementById("modal-konfirmasi");
+      const noid = modal.dataset.noid;
+      const nowa = modal.dataset.nowa;
+      const nama = document.getElementById("nama").value.trim();
+      const biayaProgram = 30000;
 
-  const biayaProgram = 30000;
+      // Ambil data awal dari server Hostinger
+      fetch("https://namadomainmu.com/get_saldo.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `no_id=${encodeURIComponent(noid)}`
+      })
+      .then(res => res.json())
+      .then(data => {
+        const jumlahKirimanAwal = Number(data.jumlah_kiriman || 0);
+        const saldoAkhirSebelum = Number(data.saldo_akhir || 0);
+        const waSebelumnya = data.wa?.trim() || "";
 
-  // Ambil jumlah_kiriman dan saldo_akhir dari Supabase
-  const urlGet = `https://brnqpdvtninzyqqwhmfj.supabase.co/rest/v1/tb_saldo?no_id=eq.${noid}&select=jumlah_kiriman,saldo_akhir,wa`;
-  fetch(urlGet, { headers: supabaseHeaders })
-    .then(res => res.json())
-    .then(data => {
-      const jumlahKirimanAwal = Number(data[0]?.jumlah_kiriman || 0);
-      const saldoAkhirSebelum = Number(data[0]?.saldo_akhir || 0);
-      const waSebelumnya = data[0]?.wa?.trim() || "";
+        if (waSebelumnya !== "") {
+          const lanjutkan = confirm(`⚠️ Santri atas nama ${nama} dengan No ID ${noid} sudah mendaftar.\nLanjutkan update WA saja tanpa mengubah saldo atau status?`);
+          if (!lanjutkan) {
+            alert("❌ Proses dibatalkan karena santri sudah mendaftar.");
+            modal.style.display = "none";
+            return;
+          }
 
-      // 🔍 Cek apakah WA sudah terisi
-      if (waSebelumnya !== "") {
-        const lanjutkan = confirm(`⚠️ Santri atas nama ${nama} dengan No ID ${noid} sudah mendaftar.\nLanjutkan update WA saja tanpa mengubah saldo atau status?`);
-        if (!lanjutkan) {
-          kirimNotifikasiBrowser("Dibatalkan", "Proses dibatalkan karena santri sudah mendaftar.");
+          // Kirim WA saja
+          fetch("https://www.alfalah1919.com/KAUNTRI/DAFTAR/update_saldo.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: `no_id=${encodeURIComponent(noid)}&wa=${encodeURIComponent(nowa)}&mode=wa_only`
+          })
+          .then(res => res.json())
+          .then(response => {
+            alert("✅ WA berhasil diperbarui.");
+            modal.style.display = "none";
+          })
+          .catch(err => {
+            console.error("❌ Gagal update WA:", err);
+            document.getElementById("wa-error").textContent = "❌ Gagal update WA ke server.";
+            modal.style.display = "none";
+          });
+
+          return;
+        }
+
+        if (jumlahKirimanAwal < 70000) {
+          const pesan = `Gagal: jumlah kiriman atas nama ${nama} dengan No ID ${noid} kurang dari Rp70.000.`;
+          document.getElementById("wa-error").textContent = "❌ " + pesan;
           modal.style.display = "none";
           return;
         }
 
-        // PATCH hanya kolom WA
-        const urlPatchWA = `https://brnqpdvtninzyqqwhmfj.supabase.co/rest/v1/tb_saldo?no_id=eq.${noid}`;
-        const bodyWA = JSON.stringify({ wa: nowa });
+        const jumlahKirimanBaru = jumlahKirimanAwal - biayaProgram;
+        const saldoAkhirBaru = saldoAkhirSebelum - biayaProgram;
 
-        return fetch(urlPatchWA, {
-          method: "PATCH",
-          headers: supabaseHeaders,
-          body: bodyWA
+        // Kirim semua data ke server Hostinger
+        fetch("https://www.alfalah1919.com/KAUNTRI/DAFTAR/update_saldo.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: `no_id=${encodeURIComponent(noid)}&wa=${encodeURIComponent(nowa)}&jumlah_kiriman=${jumlahKirimanBaru}&saldo_akhir=${saldoAkhirBaru}&status=Aktif&bayar_sistem=Lunas`
         })
-        .then(async res => {
-          const text = await res.text();
-          console.log("📦 Respons WA-only:", text);
-          if (!res.ok) throw new Error("Gagal update WA (status " + res.status + ")");
-          return text ? JSON.parse(text) : {};
-        })
-        .then(() => {
-          alert("✅ WA berhasil diperbarui tanpa mengubah saldo atau status.");
-          kirimNotifikasiBrowser("WA Diperbarui", "Kolom WA berhasil diperbarui.");
-          kosongkanForm();
+        .then(res => res.json())
+        .then(response => {
+          alert("✅ Data berhasil diperbarui.");
           modal.style.display = "none";
         })
         .catch(err => {
-          console.error("❌ Gagal update WA:", err);
-          document.getElementById("wa-error").textContent = "❌ Gagal update WA ke server.";
-          kirimNotifikasiBrowser("Gagal Update WA", "Terjadi kesalahan saat update WA.");
+          console.error("❌ Gagal simpan:", err);
+          document.getElementById("wa-error").textContent = "❌ Gagal menyimpan ke server.";
           modal.style.display = "none";
         });
-
-        return; // ⛔ Stop proses utama
-      }
-
-      // ✅ Validasi: jumlah kiriman minimal Rp70.000
-      if (jumlahKirimanAwal < 70000) {
-        const pesan = `Gagal: jumlah kiriman atas nama ${nama} dengan No ID ${noid} kurang dari Rp70.000. Minimal kiriman harus Rp70.000 untuk melanjutkan proses.`;
-        document.getElementById("wa-error").textContent = "❌ " + pesan;
-        kirimNotifikasiBrowser("Gagal Simpan", pesan);
-        modal.style.display = "none";
-        throw new Error("Jumlah kiriman tidak mencukupi");
-      }
-
-      const jumlahKirimanBaru = jumlahKirimanAwal - biayaProgram;
-      const saldoAkhirBaru = saldoAkhirSebelum - biayaProgram;
-
-      // PATCH ke Supabase
-      const urlPatch = `https://brnqpdvtninzyqqwhmfj.supabase.co/rest/v1/tb_saldo?no_id=eq.${noid}`;
-      const body = JSON.stringify({
-        wa: nowa,
-        jumlah_kiriman: String(jumlahKirimanBaru),
-        saldo_akhir: String(saldoAkhirBaru),
-        status: "Aktif",
-        bayar_sistem: "Lunas"
       });
-
-      return fetch(urlPatch, {
-        method: "PATCH",
-        headers: supabaseHeaders,
-        body: body
-      });
-    })
-    .then(async res => {
-      const text = await res.text();
-      console.log("📦 Respons Supabase:", text);
-      if (!res.ok) throw new Error("Gagal update (status " + res.status + ")");
-      return text ? JSON.parse(text) : {};
-    })
-    .then(() => {
-      alert("✅ WA disimpan, jumlah kiriman dan saldo akhir berhasil dikurangi. Status dan sistem pembayaran juga diperbarui.");
-      kirimNotifikasiBrowser("Berhasil Disimpan", "Data santri telah diperbarui: jumlah kiriman, saldo akhir, status, dan sistem pembayaran.");
-      kosongkanForm();
-      modal.style.display = "none";
-    })
-    .catch(err => {
-      console.error("❌ Gagal simpan:", err);
-      if (!document.getElementById("wa-error").textContent.includes("❌")) {
-        document.getElementById("wa-error").textContent = "❌ Gagal menyimpan ke server.";
-        kirimNotifikasiBrowser("Gagal Simpan", "Terjadi kesalahan saat menyimpan ke server.");
-      }
-      modal.style.display = "none";
     });
-});
+
 </script>
 </body>
 </html>
    
+
 
